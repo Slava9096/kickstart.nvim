@@ -100,6 +100,7 @@ vim.g.have_nerd_font = false
 
 -- Make line numbers default
 vim.opt.number = true
+vim.opt.rnu = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 -- vim.opt.relativenumber = true
@@ -156,6 +157,7 @@ vim.opt.scrolloff = 10
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
+vim.keymap.set('n', '<leader>pv', vim.cmd.Ex, { desc = 'Open file tree' })
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -288,6 +290,79 @@ require('lazy').setup({
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
       }
     end,
+  },
+
+  {
+    -- Harpoon plugin configuration
+    {
+      'ThePrimeagen/harpoon',
+      branch = 'harpoon2',
+      lazy = false,
+      requires = { 'nvim-lua/plenary.nvim' }, -- if harpoon requires this
+      config = function()
+        require('harpoon').setup {}
+
+        local function toggle_telescope_with_harpoon(harpoon_files)
+          local file_paths = {}
+          for _, item in ipairs(harpoon_files.items) do
+            table.insert(file_paths, item.value)
+          end
+
+          require('telescope.pickers')
+            .new({}, {
+              prompt_title = 'Harpoon',
+              finder = require('telescope.finders').new_table {
+                results = file_paths,
+              },
+              previewer = require('telescope.config').values.file_previewer {},
+              sorter = require('telescope.config').values.generic_sorter {},
+            })
+            :find()
+        end
+        vim.keymap.set('n', '<leader>a', function()
+          local harpoon = require 'harpoon'
+          toggle_telescope_with_harpoon(harpoon:list())
+        end, { desc = 'Open harpoon window' })
+      end,
+      keys = {
+        {
+          '<leader>A',
+          function()
+            require('harpoon'):list():append()
+          end,
+          desc = 'harpoon file',
+        },
+        {
+          '<C-b>',
+          function()
+            local harpoon = require 'harpoon'
+            harpoon.ui:toggle_quick_menu(harpoon:list())
+          end,
+          desc = 'harpoon quick menu',
+        },
+        {
+          '<leader>1',
+          function()
+            require('harpoon'):list():select(1)
+          end,
+          desc = 'harpoon to file 1',
+        },
+        {
+          '<leader>2',
+          function()
+            require('harpoon'):list():select(2)
+          end,
+          desc = 'harpoon to file 2',
+        },
+        {
+          '<leader>3',
+          function()
+            require('harpoon'):list():select(3)
+          end,
+          desc = 'harpoon to file 3',
+        },
+      },
+    },
   },
 
   -- NOTE: Plugins can specify dependencies.
